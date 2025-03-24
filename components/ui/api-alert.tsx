@@ -1,7 +1,10 @@
 "use client"
 import { Copy, Server } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
-import { Badge, BadgeProps } from "./badge";
+import { Badge } from "./badge";
+import { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "./button";
+type BadgeProps = React.ComponentProps<typeof Badge>;
 import { Button } from "./button";
 import { toast } from "react-hot-toast";
 

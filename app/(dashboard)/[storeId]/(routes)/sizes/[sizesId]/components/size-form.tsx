@@ -13,13 +13,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { AlertModal } from '@/components/modals/alert-modal';
+import ImageUpload from '@/components/ui/image-upload';
 
 interface SettingsFromProps {
-    initialData: Size | null;
-    storeId: string;
-    sizesId: string;
+    initialData: Size | null; 
 }
 
 const formSchema = z.object({
@@ -29,8 +28,9 @@ const formSchema = z.object({
 
 type SizeFormValues = z.infer<typeof formSchema>;
 
-export const SizeForm: React.FC<SettingsFromProps> = ({ initialData, storeId, sizesId }) => {
+export const SizeForm: React.FC<SettingsFromProps> = ({ initialData }) => {
 
+    const params = useParams();
     const router = useRouter();
 
     const [open, setOpen] = useState(false);
@@ -52,38 +52,32 @@ export const SizeForm: React.FC<SettingsFromProps> = ({ initialData, storeId, si
     const onSubmit = async (data: SizeFormValues) => {
         try {
             setLoading(true);
-            console.log("Submitting form with data:", data);
-            console.log("Store ID:", storeId);
-            console.log("Size ID:", sizesId);
             if (initialData) {
-                console.log("Updating size with ID:", sizesId);
-                await axios.patch(`/api/${storeId}/sizes/${sizesId}`, data);
+                await axios.patch(`/api/${params.storeId}/sizes/${params.sizeId}`, data)
             } else {
-                console.log("Creating new size for store ID:", storeId);
-                await axios.post(`/api/${storeId}/sizes`, data);
+                await axios.post(`/api/${params.storeId}/sizes`, data)
             }
             router.refresh();
-            router.push(`/${storeId}/sizes`);
-            toast.success(toastMessage);
-        } catch (err) {
-            console.error("Error during form submission:", err);
+            router.push(`/${params.storeId}/sizes`);
+            toast.success(toastMessage)
+        } catch(err) {
             toast.error("Something went wrong.");
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
     }
 
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/${storeId}/sizes/${sizesId}`);
+            await axios.delete(`/api/${params.storeId}/sizes/${params.sizeId}`)
             router.refresh();
-            router.push(`/${storeId}/sizes`);
-            toast.success("Size deleted.");
-        } catch (err) {
+            router.push(`/${params.storeId}/sizes`)
+            toast.success("Size deleted.")
+        } catch(err) {
             toast.error("Make sure you removed all products using this size first.");
         } finally {
-            setLoading(false);
+            setLoading(false)
             setOpen(false);
         }
     }
@@ -91,10 +85,10 @@ export const SizeForm: React.FC<SettingsFromProps> = ({ initialData, storeId, si
     return (
         <>
             <AlertModal
-                isOpen={open}
-                onClose={() => setOpen(false)}
-                onConfirm={onDelete}
-                loading={loading}
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            onConfirm={onDelete}
+            loading={loading}
             />
             <div className="flex items-center justify-between">
                 <Heading title={title} description={description} />
@@ -111,7 +105,7 @@ export const SizeForm: React.FC<SettingsFromProps> = ({ initialData, storeId, si
                         <FormField
                             control={form.control} 
                             name="name"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
@@ -124,7 +118,7 @@ export const SizeForm: React.FC<SettingsFromProps> = ({ initialData, storeId, si
                         <FormField
                             control={form.control} 
                             name="value"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Value</FormLabel>
                                     <FormControl>

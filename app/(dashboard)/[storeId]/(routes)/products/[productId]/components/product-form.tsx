@@ -37,7 +37,7 @@ const formSchema = z.object({
     sizeId: z.string().min(1),
     isFeatured: z.boolean().default(false).optional(),
     isArchived: z.boolean().default(false).optional()
-
+    
 })
 
 type ProductFormValues = z.infer<typeof formSchema>;
@@ -88,7 +88,7 @@ export const ProductForm: React.FC<ProductFromProps> = ({
             router.refresh();
             router.push(`/${params.storeId}/products`);
             toast.success(toastMessage)
-        } catch (err) {
+        } catch(err) {
             toast.error("Something went wrong.");
         } finally {
             setLoading(false)
@@ -102,7 +102,7 @@ export const ProductForm: React.FC<ProductFromProps> = ({
             router.refresh();
             router.push(`/${params.storeId}/products`)
             toast.success("Product deleted.")
-        } catch (err) {
+        } catch(err) {
             toast.error("Something Went Wrong.");
         } finally {
             setLoading(false)
@@ -130,16 +130,17 @@ export const ProductForm: React.FC<ProductFromProps> = ({
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8">
                     <FormField
-                        control={form.control}
+                        control={form.control} 
                         name="images"
-                        render={({ field }) => (
+                        render={({field}) => (
                             <FormItem>
                                 <FormLabel>Background Image</FormLabel>
                                 <FormControl>
                                     <ImageUpload
-                                        multiple
+                                        value={field.value.map((image) => image.url)}
                                         disabled={loading}
-                                        onSubmit={(newUrls) => field.onChange(newUrls)}
+                                        onChange={(url) => field.onChange([...field.value, { url }])}
+                                        onRemove={(url) => field.onChange([...field.value.filter((image) => image.url !== url)])}
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -148,9 +149,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                     />
                     <div className='grid grid-cols-3 gap-8'>
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="name"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
                                     <FormControl>
@@ -161,9 +162,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="price"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Price</FormLabel>
                                     <FormControl>
@@ -174,9 +175,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="categoryId"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Category</FormLabel>
                                     <Select
@@ -206,9 +207,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="sizeId"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Size</FormLabel>
                                     <Select
@@ -238,9 +239,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="colorId"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem>
                                     <FormLabel>Color</FormLabel>
                                     <Select
@@ -270,9 +271,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="isFeatured"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem className='flex flex-row items-start p-4 space-x-3 space-y-0 border rounded-md'>
                                     <FormControl>
                                         <Checkbox
@@ -293,9 +294,9 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={form.control} 
                             name="isArchived"
-                            render={({ field }) => (
+                            render={({field}) => (
                                 <FormItem className='flex flex-row items-start p-4 space-x-3 space-y-0 border rounded-md'>
                                     <FormControl>
                                         <Checkbox
@@ -309,7 +310,7 @@ export const ProductForm: React.FC<ProductFromProps> = ({
                                             Archived
                                         </FormLabel>
                                         <FormDescription>
-                                            The product will not appear anywhere in the store.
+                                            The product will appear anywhere in the store.
                                         </FormDescription>
                                     </div>
                                 </FormItem>

@@ -1,20 +1,43 @@
-import { NextResponse } from "next/server";
-import { auth } from '@clerk/nextjs/server';
 import prismadb from "@/lib/prismadb";
+import { auth } from '@clerk/nextjs/server'
+import { NextResponse } from "next/server"
 
-export async function POST(
+export async function GET (
     req: Request,
-    { params }: { params: { storeId: string } }
+    { params }: { params: Promise<{ sizeId: string }>}
+) {
+    try {
+        const { sizeId } = await params; 
+        if(!sizeId) {
+            return new NextResponse("Size id is required", { status: 400 });
+        }
+
+        const size = await prismadb.size.findUnique({
+            where: {
+                id: sizeId,
+            }
+        })
+
+        return NextResponse.json(size);
+    } catch (err) {
+        console.log('[SIZE_GET]', err)
+        return new NextResponse('Internal error', { status: 500 })
+    }
+}
+
+export async function PATCH (
+    req: Request,
+    { params }: { params: Promise<{ storeId: string, sizeId: string }>}
 ) {
     try {
         const { userId } = await auth();
         const body = await req.json();
-        const { storeId } = params;
+        const { storeId, sizeId } = await params; 
 
         const { name, value } = body;
 
         if (!userId) {
-            return new NextResponse("Unauthenticated", { status: 401 });
+            return new NextResponse("Unauthenticated", { status: 401 })
         }
 
         if (!name) {
@@ -25,8 +48,8 @@ export async function POST(
             return new NextResponse("Value is required", { status: 400 });
         }
 
-        if (!storeId) {
-            return new NextResponse("Store Id is required", { status: 400 });
+        if(!sizeId) {
+            return new NextResponse("Size id is required", { status: 400 });
         }
 
         const storeByUserId = await prismadb.store.findFirst({
@@ -34,137 +57,45 @@ export async function POST(
                 id: storeId,
                 userId
             }
-        });
+        })
 
         if (!storeByUserId) {
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        const size = await prismadb.size.create({
+        const size = await prismadb.size.updateMany({
+            where: {
+                id: sizeId
+            },
             data: {
                 name,
-                value,
-                storeId: storeId
+                value
             }
-        });
+        })
 
         return NextResponse.json(size);
-
     } catch (err) {
-        console.log(`[SIZES_POST] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500 });
+        console.log('[SIZE_PATCH]', err)
+        return new NextResponse('Internal error', { status: 500 })
     }
 }
 
-export async function GET(
+//// Delete Method
+
+export async function DELETE (
     req: Request,
-    { params }: { params: { storeId: string } }
-) {
-    try {
-        const { storeId } = params;
-        if (!storeId) {
-            return new NextResponse("Store Id is required", { status: 400 });
-        }
-
-        const sizes = await prismadb.size.findMany({
-            where: {
-                storeId: storeId
-            }
-        });
-
-        return NextResponse.json(sizes);
-
-    } catch (err) {
-        console.log(`[SIZES_GET] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500 });
-    }
-}
-
-export async function PUT(
-  req: Request,
-  { params }: { params: { storeId: string, sizeId: string } }
-) {
-  try {
-      const { userId } = await auth();
-      const body = await req.json();
-      const { storeId, sizeId } = params;
-
-      const { name, value } = body;
-
-      if (!userId) {
-          return new NextResponse("Unauthenticated", { status: 401 });
-      }
-
-      if (!name) {
-          return new NextResponse("Name is required", { status: 400 });
-      }
-
-      if (!value) {
-          return new NextResponse("Value is required", { status: 400 });
-      }
-
-      if (!storeId) {
-          return new NextResponse("Store Id is required", { status: 400 });
-      }
-
-      if (!sizeId) {
-          return new NextResponse("Size Id is required", { status: 400 });
-      }
-
-      const storeByUserId = await prismadb.store.findFirst({
-          where: {
-              id: storeId,
-              userId
-          }
-      });
-
-      if (!storeByUserId) {
-          return new NextResponse("Unauthorized", { status: 403 });
-      }
-
-      const size = await prismadb.size.update({
-          where: {
-              id: sizeId
-          },
-          data: {
-              name,
-              value
-          }
-      });
-
-      return NextResponse.json(size);
-
-  } catch (err) {
-      console.log(`[SIZES_PUT] ${err}`);
-      return new NextResponse(`Internal error`, { status: 500 });
-  }
-}
-
-export async function PATCH(
-  req: Request,
-  { params }: { params: { storeId: string, sizeId: string } }
-) {
-  return PUT(req, { params });
-}
-
-export async function DELETE(
-    req: Request,
-    { params }: { params: { storeId: string, sizeId: string } }
+    { params }: { params: Promise<{ storeId: string, sizeId: string }>}
 ) {
     try {
         const { userId } = await auth();
-        const { storeId, sizeId } = params;
+        const { storeId, sizeId } = await params; 
 
         if (!userId) {
-            return new NextResponse("Unauthenticated", { status: 401 });
+            return new NextResponse("Unauthenticated", { status: 401 })
         }
 
-        if (!storeId) {
-            return new NextResponse("Store Id is required", { status: 400 });
-        }
-
-        if (!sizeId) {
-            return new NextResponse("Size Id is required", { status: 400 });
+        if(!sizeId) {
+            return new NextResponse("Size id is required", { status: 400 });
         }
 
         const storeByUserId = await prismadb.store.findFirst({
@@ -172,22 +103,21 @@ export async function DELETE(
                 id: storeId,
                 userId
             }
-        });
+        })
 
         if (!storeByUserId) {
             return new NextResponse("Unauthorized", { status: 403 });
         }
 
-        await prismadb.size.delete({
+        const size = await prismadb.size.deleteMany({
             where: {
-                id: sizeId
+                id: sizeId,
             }
-        });
+        })
 
-        return new NextResponse("Size deleted successfully", { status: 200 });
-
+        return NextResponse.json(size);
     } catch (err) {
-        console.log(`[SIZES_DELETE] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500 });
+        console.log('[SIZE_DELETE]', err)
+        return new NextResponse('Internal error', { status: 500 })
     }
 }
